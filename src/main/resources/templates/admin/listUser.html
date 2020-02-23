@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:include="include/admin/adminHeader::html('用户管理')"></head>
+	<body>
+		<div th:replace="include/admin/adminNavigator::html"></div>
+		<script>
+			$(function(){
+				var data4Vue = {
+					users:[],
+					pagination:{}
+				}
+				var vue = new Vue({
+					el:"#workingArea",
+					data:data4Vue,
+					mounted:function(){
+						this.list(0);
+					},
+					methods:{
+						list:function(start){
+							var url = "users?start="+start;
+							axios.get(url).then(function(response){
+								console.log(response.data.content)
+							})
+						}
+					}
+				})
+				
+			})
+		</script>
+	</body>
+</html>

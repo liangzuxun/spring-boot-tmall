@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head th:include="include/admin/adminHeader::html('订单管理')"></head>
+	<body>
+		<div th:replace="include/admin/adminNavigator::html"></div>
+		<script>
+			$(function(){
+				var data4Vue = {
+					pagination:{},
+					orders:[]
+				}
+				var vue = new Vue({
+					el:"#workingArea",
+					data:data4Vue,
+					mounted:function(){
+						this.list(0)
+					},
+					methods:{
+						list:function(start){
+							var url = "orders?start="+start;
+							axios.get(url).then(function(response){
+								vue.orders = response.data.content;
+								vue.pagination = response.data;
+							})
+							
+						},
+						showOrderItems:function(oid){
+							$(".orderPageOrderItemTR").hide();
+							$("#orderItemsTR"+oid).show();
+						},
+						deliveryOrder(order){
+							var url = "deliveryOrder/"+order.id;
+							axios.put(url).then(function(response){
+								if(response.data.code == 0){
+									if(response.data.data != null){
+										console.log(response.data.data)
+										
+									}
+									order.status = "waitConfirm";
+									alert("发货成功");
+								}else if(response.data.code == 1){
+									alert(response.data.message);
+								}
+								
+							})
+						},
+						jump:function(page){
+							jump(page,vue);
+						},
+						jumpByNumber:function(start){
+							jumpByNumber(start,vue);
+						}
+						
+					},
+					filters:{
+						formatDateFilter:function(value){
+							if(!value) return;
+							return new Date(value).toLocaleString("chinese",{hour12:false})
+						}
+					}
+					
+				})
+			})
+		</script>
+		<div id="workingArea">
+			<h1 class="label label-info">订单管理</h1>
+			<br>
+			<br>
+			<div class="listDataTableDiv">
+				<table class="table table-striped table-condensed table-bordered table-hover">
+					 <thead>
+            <tr class="success">
+                <th>状态</th>
+                <th>金额</th>
+                <th width="100px">商品数量</th>
+                <th width="100px">买家名称</th>
+                <th>创建时间</th>
+                <th>支付时间</th>
+                <th>发货时间</th>
+                <th>确认收货时间</th>
+                <th width="120px">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            	<template v-for="order in orders">
+            	<tr>
+            		<td>{{order.statusDesc}}</td>
+            		<td>{{order.total}}</td>
+            		<td>{{order.totalNumber}}</td>
+            		<td>{{order.user.name}}</td>
+            		<td>{{order.createDate | formatDateFilter}}</td>
+            		<td>{{order.payDate | formatDateFilter}}</td>
+            		<td>{{order.deliveryDate|formatDateFilter}}</td>
+            		<td>{{order.confirmDate | formatDateFilter}}</td>
+            		<td>
+            			<input type="button" class="btn btn-primary btn-xs" value="查看详情" @click="showOrderItems(order.id)"/>
+            			<input type="button" 
+            			v-if="order.status == 'waitDelivery'"
+            			class="btn btn-primary btn-xs" value="发货" @click="deliveryOrder(order)"/>
+            		</td>
+            	</tr>
+            	<tr class="orderPageOrderItemTR" :id="'orderItemsTR'+order.id">
+            		<td colspan="10" align="center">
+            			<div class="orderPageOrderItem">
+            				<table width="800px" align="center" class="orderPageOrderItemTable">
+            					<tr v-for="orderItem in order.orderItems">
+            						<td align="left">
+            							<img 
+            							width="40px"
+            							height="40px"
+            							:src="'img/productSingle/'+orderItem.product.firstProductImage.id+'.jpg'">
+            						</td>
+            						<td align="left" class="text-primary">
+            							{{orderItem.product.name}}
+            						</td>
+            						<td align="center">
+            							{{orderItem.number}}
+            							个
+            						</td>
+            						<td align="center">
+            							单价:￥{{orderItem.product.promotePrice}}
+            						</td>
+            					</tr>
+            				</table>
+            			</div>
+            		</td>
+            	</tr>
+            	</template>
+            </tbody>
+				</table>
+			</div>
+			 <div th:replace="include/admin/adminPage::html" ></div>
+		</div>
+	</body>
+</html>

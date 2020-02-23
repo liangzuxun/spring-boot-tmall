@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include/admin/adminHeader::html('产品管理')"></head>
+<body>
+<div th:replace="include/admin/adminNavigator::html"></div>
+<div id="workingArea">
+<ol class="breadcrumb">
+	<li>
+		<a href="admin_category_list">所有分类</a>
+	</li>
+	<li>
+		<a :href="'admin_product_list?cid='+category.id">{{category.name}}</a>
+	</li>
+	<li class="active">
+		产品管理
+	</li>
+</ol>
+<div class="listDataTableDiv">
+	<table class="table table-striped table-bordered table-condensed table-hover">
+		<thead>
+			<tr class="success">
+				<td>ID</td>
+				<td>图片</td>
+				<td>产品名称</td>
+				<td>产品小标题</td>
+				<td>原价格</td>
+				<td>优惠价格</td>
+				<td>库存数量</td>
+				<td>图片管理</td>
+				<td>设置属性</td>
+				<td>编辑</td>
+				<td>删除</td>
+			</tr>
+		</thead>
+		<tbody>
+			<tr v-for="product in products">
+				<td>{{product.id}}</td>
+				<td>
+					<img v-if="null != product.firstProductImage" width="40px"
+					:src="'img/productSingle/'+product.firstProductImage.id+'.jpg'"/>
+				</td>
+				<td>{{product.name}}</td>
+				<td>{{product.subTitle}}</td>
+				<td>{{product.originalPrice}}</td>
+				<td>{{product.promotePrice}}</td>
+				<td>{{product.stock}}</td>
+				<td>
+					<a :href="'admin_productImage_list?pid='+product.id">
+						<span class="glyphicon glyphicon-picture"></span>
+					</a>
+				</td>
+				<td>
+					<a :href="'admin_propertyValue_edit?pid='+product.id">
+						<span class="glyphicon glyphicon-th-list"></span>
+					</a>
+				</td>
+				<td>
+					<a :href="'admin_product_edit?pid='+product.id">
+						<span class="glyphicon glyphicon-edit"></span>
+					</a>
+				</td>
+				<td>
+					<a href="#nowhere" @click="deleteProduct(product.id)">
+						<span class="glyphicon glyphicon-trash"></span>
+					</a>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+	<div th:replace="include/admin/adminPage::html"></div>
+	<div class="addDiv panel panel-warning">
+		<div class="panel-heading">新增产品</div>
+		<div class="panel-body">
+			<table class="addTable">
+				<tr>
+					<td>
+					产品名称
+					</td>
+					<td>
+						<input type="text" class="form-control" name="name" v-model.trim="addProduct.name"/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					产品小标题
+					</td>
+					<td>
+						<input type="text" class="form-control" name="subTitle" v-model.trim="addProduct.subTitle"/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					原价格
+					</td>
+					<td>
+						<input type="text" class="form-control" name="originalPrice" v-model.trim="addProduct.originalPrice"/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					优惠价格
+					</td>
+					<td>
+						<input type="text" class="form-control" name="promotePrice" v-model.trim="addProduct.promotePrice"/>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					库存
+					</td>
+					<td>
+						<input type="text" class="form-control" name="stock" v-model.trim="addProduct.stock"/>
+					</td>
+				</tr>
+				<tr align="center">
+					<td colspan="2">
+						<input type="button" class="btn btn-success" value="提 交" @click="_addProduct"/>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</div>
+</div>
+<script>
+	$(function(){
+		var cid = getUrlParms("cid");
+		console.log(cid);
+		var data4Vue={
+				category:{},
+				pagination:{},
+				products:[],
+				addProduct:{
+					name:"",
+					subTitle:"",
+					originalPrice:99.98,
+					promotePrice:19.98,
+					stock:99,
+					category:{
+						id:0,
+						name:""
+					},
+					id:0
+				}
+		}
+		var vue = new Vue({
+			el:"#workingArea",
+			data:data4Vue,
+			mounted:function(){
+				this.getCategory(cid);
+				this.list(0);
+				
+			},
+			methods:{
+				getCategory:function(cid){
+					var url = "categories/"+cid;
+					var _vue = this;
+					axios.get(url).then(function(response){
+						_vue.category = response.data;
+						_vue.addProduct.category.id = response.data.id;
+						_vue.addProduct.category.name = response.data.name;
+					})
+				},
+				list:function(start){
+					var url = "categories/"+cid+"/products?start="+start;
+					axios.get(url).then(function(response){
+						vue.pagination = response.data;
+						vue.products = response.data.content;
+					})
+					
+				},
+				deleteProduct:function(pid){
+					var url = "products/"+pid;
+					axios.delete(url).then(function(response){
+						vue.list(0);
+					})
+				},
+				_addProduct:function(){
+					var url = "products";
+					console.log(this.addProduct);
+					axios.post(url,this.addProduct).then(function(response){
+						console.log(response.data);
+						vue.list(0);
+					})
+				},
+				jump:function(page){
+					jump(page,vue);
+				},
+				jumpByNumber(start){
+					jumpByNumber(start,vue);
+				}
+				
+				
+			}
+		
+		})
+	})
+</script>
+</body>
+	
+</html>

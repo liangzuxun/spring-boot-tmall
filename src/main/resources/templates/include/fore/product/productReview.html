@@ -1,0 +1,26 @@
+<div th:fragment="html">
+	<div class="productReviewDiv" v-show="showReview">
+		<div class="productReviewTopPart">
+			<a href="#nowhere" class="productReviewTopPartSelectedLink" @click="toggle2Detail">商品详情</a>
+			<a href="#nowhere" class="selected">累计评价<span class="productReviewTopReviewLinkNumber">
+				{{product.reviewCount}}
+			</span></a>
+		</div>
+		<div class="productReviewContentPart" v-if="reviews.length != 0">
+			<template v-for="review in reviews">
+			<div class="productReviewItem">
+				<div class="productReviewItemDesc">
+					{{review.content}}
+				</div>
+				<div class="productReviewItemDate">
+					{{new Date(review.createDate).toLocaleString("chinese",{"hour12":false}) }}
+				</div>
+			</div>
+			<div class="productReviewItemUser">
+				{{review.user.name}}
+			</div>
+			</template>
+			<div style="clear:both"></div>
+		</div>
+	</div>
+</div>

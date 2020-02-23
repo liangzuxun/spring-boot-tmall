@@ -1,0 +1,124 @@
+<div th:fragment="html">
+	
+	<script>
+		$(function(){
+			var oid = getUrlParms("oid");
+			console.log(oid)
+			var data = {
+				uri:"forereview",
+				order:null,
+				product:'',
+				reviews:[],
+				content:'',
+				showReviews:false
+			}
+			var vue = new Vue({
+				el:"#workingArea",
+				data:data,
+				mounted:function(){
+					this.init();
+				},
+				methods:{
+					init:function(){
+						var url = this.uri+"?oid="+oid;
+						axios.get(url).then(function(response){
+							var result = response.data;
+							vue.order = result.data.o;
+							vue.product = result.data.p;
+							vue.reviews = result.data.reviews;
+							if(vue.order.status == 'finish')
+								vue.showReviews = true;
+							else
+								vue.showReviews = false;
+						})
+					},
+					submitReview:function(){
+						var url = "foredoreview?oid="+vue.order.id+"&pid="+vue.product.id+"&content="+vue.content;
+						console.log(url)
+						axios.post(url).then(function(response){
+							var result =response.data;
+							if(result.code == 0){
+								vue.showReviews = true;
+							}
+						})
+					}
+				}
+			})
+		})
+	</script>
+	
+	<div class="reviewPage">
+		<div class="reviewProductInfo">
+			<div class="productPic">
+				<img :src="'img/productSingle/'+product.firstProductImage.id+'.jpg'" width="400px" height="400px"
+				v-if="product.firstProductImage != null"
+				>
+			</div>
+			<div class="productInfoDiv">
+				<div class="productTitle">
+					{{product.name}}
+				</div>
+				<table class="productInfoTable">
+					<tr>
+						<td>
+							价格:
+						</td>
+						<td class="productPrice">
+							
+							<span>￥{{product.promotePrice | formatMoneyFilter}}</span>
+							元
+						</td>
+					</tr>
+					<tr>
+						<td>
+							配送:
+						</td>
+						<td>
+							快递0.00
+						</td>
+					</tr>
+					<tr>
+						<td>
+							月销量:
+						</td>
+						<td>
+							<span class="amount">{{product.saleCount}}</span>
+							件
+						</td>
+					</tr>
+				</table>
+				<div class="reviewProductInfoRightBelowDiv">
+                    <span class="reviewProductInfoRightBelowImg"><img1 src="img/site/reviewLight.png"></span>
+                    <span v-if="null!=order" class="reviewProductInfoRightBelowText" >现在查看的是 您所购买商品的信息
+    于 {{order.createDate | formatDateFilter('YYYY-MM-DD')}} 下单购买了此商品 </span>
+                 
+                </div>
+			</div>
+		</div>
+		<div class="productReviewDiv">
+			<div class="reviewsCountHeader">
+				<span class="reviewsCount">
+					累计评价
+					<span class="amount">{{product.reviewCount}}</span>
+				</span>
+				<div class="line"></div>
+			</div>
+			<div class="reviewSubmitDiv" v-if="!showReviews">
+				<div class="tips">
+					其他买家,需要您的建议哦!
+				</div>
+				<div class="submitBox">
+					<input type="button" value="评价商品" @click="submitReview">
+					<textarea style="width:500px;height:180px;resize:none" v-model="content"></textarea>
+				</div>
+			</div>
+			   <div v-if="showReviews" class="reviewDivlistReviews">
+                <div v-for="r in reviews" class="reviewDivlistReviewsEach">
+                    <div class="reviewDate">{{r.createDate| formatDateFilter}}</div>
+                    <div class="reviewContent">{{r.content}}</div>
+                    <div class="reviewUserInfo pull-right">{{r.user.anonymousName}}<span class="reviewUserInfoAnonymous">(匿名)</span></div>
+                </div>
+        </div>
+		</div>
+	</div>
+</div>

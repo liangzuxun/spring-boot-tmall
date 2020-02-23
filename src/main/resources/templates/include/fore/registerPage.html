@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<style>
+		.registerTable tr td{
+			text-align:right;
+		}
+		.registerTable tr td input,#tips{
+			text-align:left;
+		
+		}
+		.bold{
+			font-weight:bold;
+		}
+		#submitBtn{
+			text-align:center;
+		}
+		input::-webkit-input-placeholder{
+			color:gray;
+			
+		}
+		
+		
+	</style>
+	<script>
+		$(function(){
+			var data4Vue = {
+				user:{
+					name:"",
+					password:"",
+					salt:""
+				},
+				ensurePassword:"",
+				errorMsg:""
+					
+			}
+			var vue = new Vue({
+				el:"#workingArea",
+				data:data4Vue,
+				mounted:function(){
+					
+				},
+				methods:{
+					register:function(){
+						if(!this.user.name){
+							this.errorMsg = "用户名不能为空";
+							return;
+						}
+						if(!this.user.password){
+							this.errorMsg ="密码不能为空";
+							return;
+						}
+						if(!this.ensurePassword){
+							this.errorMsg = "请重复输入密码";
+							return;
+						}
+						if(this.user.password != this.ensurePassword){
+							this.errorMsg = "两次输入的密码不一致，请重新检查";
+							return;
+						}
+						var url = "foreregister";
+						axios.post(url,this.user).then(function(response){
+							var result = response.data;
+							if(result.code == 0){
+								location.href = "registerSuccess";
+							}else{
+								vue.errorMsg = result.message;
+							}
+						})
+					}
+				},
+				computed:{
+					visible:function(){
+						return this.errorMsg.length!=0?"visible":"hidden"
+					}
+				}
+				
+			})
+			
+			
+		})
+	</script>
+	<div class="registerDiv">
+		<div class="registerErrorMessageDiv" :style="{visibility:visible}">
+			<div class="alert alert-danger" role="alert">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+				</button>
+				<span class="errorMessage">{{errorMsg}}</span>
+			</div>
+		</div>
+		<table class="registerTable" align="center">
+			<tr>
+				<td class="bold">
+					设置会员名
+				</td>
+				<td>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					登录名
+				</td>
+				<td>
+					<input id="name" type="text" name="username" placeholder="会员名一旦设置成功 无法修改" v-model.trim="user.name"/>
+				</td>
+			</tr>
+			<tr>
+				<td class="bold">
+					设置登录密码
+				</td>
+				<td id="tips">
+					登陆时验证,保护账号信息
+				</td>
+			</tr>
+				<tr>
+				<td>
+					登录密码
+				</td>
+				<td>
+					<input id="password" type="password" name="password" placeholder="设置你的登录密码" v-model.trim="user.password"/>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					确认密码
+				</td>
+				<td>
+					<input id="ensurePassword" type="password" name="ensurePassword" placeholder="请再次输入你的密码" v-model.trim="ensurePassword"/>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<input type="button" value="提 交" id="submitBtn" @click="register"/>
+				</td>
+			</tr>
+		</table>
+	</div>
+</html>
