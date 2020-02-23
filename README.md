@@ -1,5 +1,5 @@
 # spring-boot-tmall
-### 前端 vue.js、jquery、bootstrap
+### 前端 vue.js、jquery、bootstrap、
 ### 后端 java j2ee基础
 ### tomcat 服务端容器
 ### shiro 登录鉴权 用户-角色-权限
